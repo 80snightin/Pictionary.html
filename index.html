@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>80s Pictionary Game</title>
+  <style>
+    body {
+      background: black;
+      color: #39ff14;
+      font-family: 'Courier New', monospace;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+    }
+    h1 {
+      font-size: 3em;
+      color: #ff00ff;
+      text-shadow: 0 0 10px #ff00ff, 0 0 20px #ff00ff;
+    }
+    #word {
+      margin: 30px;
+      font-size: 2em;
+      color: cyan;
+      text-shadow: 0 0 10px cyan, 0 0 20px cyan;
+    }
+    #timer {
+      font-size: 2.5em;
+      margin: 20px;
+      color: #39ff14;
+      text-shadow: 0 0 10px #39ff14, 0 0 20px #39ff14;
+    }
+    button {
+      background: #ff00ff;
+      border: none;
+      color: white;
+      padding: 15px 30px;
+      font-size: 1.5em;
+      cursor: pointer;
+      border-radius: 8px;
+      text-shadow: 0 0 5px black;
+      box-shadow: 0 0 15px #ff00ff;
+      transition: transform 0.2s;
+    }
+    button:hover {
+      transform: scale(1.1);
+      background: #39ff14;
+      box-shadow: 0 0 20px #39ff14;
+    }
+  </style>
+</head>
+<body>
+  <h1>🎨 80s Pictionary 🎨</h1>
+  <div id="word">Click below to get a word!</div>
+  <div id="timer">60</div>
+  <button onclick="newWord()">New Word</button>
+
+  <script>
+    const words = [
+      "Lava lamp","Boomerang","Accordion","Bowling ball","Flip-flops",
+      "Grapes","Alarm clock","Sunglasses","Flashlight","Candle",
+      "Rollerblades","Harmonica","Map","Chessboard","Snorkel",
+      "Kite","Yo-yo","Headphones","Pancakes","Sandwich",
+      "Airplane","Laptop","Robot","Umbrella","Ghost","Castle","Mountain","Ladder","Ice cream","Banana",
+      "Rocket","Train","Drum","Glasses","Crown","Rainbow","Spaceship","Dinosaur","Roller skates","Lighthouse",
+      "Scissors","Microwave","Tent","Backpack","Bridge","Volcano","Shark","Spider","Tractor","Pirate",
+      "Mermaid","Compass","Kangaroo","Dragon","Jellyfish","Castle tower","Typewriter","Bowling alley","Disco ball","Skateboard",
+      "Washing machine","Helicopter","Diving board","Cactus","Paintbrush","Roller coaster","Ferris wheel","Telescope","Parachute","Electric guitar",
+      "Hamburger","Violin","Treasure chest","Hot air balloon","Pyramid","Windmill","Surfboard","Traffic light","Suitcase","Snowman",
+      "Submarine","Fire hydrant","Tractor beam","Knight","Genie lamp","Hourglass","Magnet","Spacesuit","Boombox","Cassette tape",
+      "Arcade machine","Neon sign","Rubik’s Cube","Jukebox","Skate rink","Polaroid camera","Payphone","VHS tape","Walkman"
+    ];
+
+    let countdown;
+    function newWord() {
+      const randomIndex = Math.floor(Math.random() * words.length);
+      document.getElementById('word').innerText = words[randomIndex];
+      startTimer(60);
+    }
+
+    function startTimer(seconds) {
+      clearInterval(countdown);
+      let timeLeft = seconds;
+      const timerDisplay = document.getElementById('timer');
+      timerDisplay.style.color = "#39ff14";
+      timerDisplay.style.textShadow = "0 0 10px #39ff14, 0 0 20px #39ff14";
+      
+      timerDisplay.textContent = timeLeft;
+      countdown = setInterval(() => {
+        timeLeft--;
+        if (timeLeft <= 0) {
+          clearInterval(countdown);
+          timerDisplay.textContent = "TIME’S UP!";
+          timerDisplay.style.color = "red";
+          timerDisplay.style.textShadow = "0 0 15px red, 0 0 30px red";
+        } else {
+          timerDisplay.textContent = timeLeft;
+        }
+      }, 1000);
+    }
+  </script>
+</body>
+</html>
