@@ -1,137 +1,412 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>80s Pictionary Game</title>
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<title>80s Pictionary — Retro Arcade</title>
 
-    body {
-      margin: 0;
-      height: 100vh;
-      font-family: 'Press Start 2P', monospace;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      background: black;
-      overflow: hidden;
-      position: relative;
-      color: white;
-    }
+<!-- Retro fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Press+Start+2P&display=swap" rel="stylesheet">
 
-    /* Neon arcade grid floor */
-    body::before {
-      content: "";
-      position: absolute;
-      bottom: 0;
-      width: 100%;
-      height: 60%;
-      background-image:
-        linear-gradient(to right, rgba(0,255,255,0.4) 2px, transparent 2px),
-        linear-gradient(to top, rgba(255,0,255,0.4) 2px, transparent 2px);
-      background-size: 80px 80px;
-      transform: perspective(500px) rotateX(60deg);
-      transform-origin: bottom;
-      opacity: 0.4;
-    }
+<style>
+  :root{
+    --bg-black:#030305;
+    --neon-cyan:#00f0ff;
+    --neon-magenta:#ff2bd6;
+    --neon-green:#39ff14;
+    --panel-bg: rgba(0,0,0,0.46);
+    --panel-border: rgba(255,255,255,0.06);
+  }
 
-    h1 {
-      font-size: 3.5em;
-      color: #ff00ff;
-      text-shadow: 0 0 10px #ff00ff, 0 0 25px #ff00ff, 0 0 50px #ff00ff;
-      margin-bottom: 40px;
-      z-index: 2;
-    }
+  /* Reset */
+  *{box-sizing:border-box}
+  html,body{height:100%;margin:0;padding:0;background:var(--bg-black);-webkit-font-smoothing:antialiased}
+  body{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-family: "Orbitron", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    color:var(--neon-cyan);
+    overflow:hidden;
+    position:relative;
+    padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  }
 
-    #word {
-      margin: 30px;
-      font-size: 3em;
-      color: #00ffff;
-      text-shadow: 0 0 10px #00ffff, 0 0 25px #00ffff, 0 0 50px #00ffff;
-      z-index: 2;
-    }
+  /* ---------- BACKGROUND LAYERS ---------- */
+  /* subtle starfield */
+  .stars{
+    position: absolute;
+    inset:0;
+    background-image:
+      radial-gradient(1px 1px at 20% 10%, rgba(255,255,255,0.08) 0, transparent 60%),
+      radial-gradient(1px 1px at 70% 25%, rgba(255,255,255,0.06) 0, transparent 60%),
+      radial-gradient(1px 1px at 30% 60%, rgba(255,255,255,0.04) 0, transparent 60%),
+      radial-gradient(1px 1px at 80% 80%, rgba(255,255,255,0.06) 0, transparent 60%);
+    pointer-events:none;
+    opacity:0.9;
+    mix-blend-mode: screen;
+    z-index:0;
+  }
 
-    #timer {
-      font-size: 3em;
-      margin: 20px;
-      color: #39ff14;
-      text-shadow: 0 0 10px #39ff14, 0 0 25px #39ff14;
-      z-index: 2;
-    }
+  /* retro synth sun */
+  .sun{
+    position:absolute;
+    left:50%;
+    bottom:42%;
+    transform:translateX(-50%);
+    width:48vmin;
+    height:24vmin;
+    max-width:720px;
+    max-height:360px;
+    border-radius:50%;
+    background:
+      radial-gradient(circle at 50% 40%, #ff9bb3 0%, #ff6a9a 30%, #ff3b6f 55%, transparent 60%),
+      repeating-linear-gradient(0deg, rgba(255,255,255,0.06) 0 2px, transparent 2px 6px);
+    filter: blur(6px) contrast(1.1) saturate(1.2);
+    opacity:0.95;
+    z-index:1;
+    pointer-events:none;
+  }
 
-    button {
-      background: #ff00ff;
-      border: none;
-      color: white;
-      padding: 20px 40px;
-      font-size: 1.5em;
-      cursor: pointer;
-      border-radius: 12px;
-      text-shadow: 0 0 5px black;
-      box-shadow: 0 0 25px #ff00ff;
-      transition: transform 0.2s, background 0.2s;
-      z-index: 2;
-    }
+  /* Grid layers (two layers, different speeds for parallax) */
+  .grid, .grid-2{
+    position:absolute;
+    left:50%;
+    bottom:-2%;
+    transform:translateX(-50%) perspective(900px) rotateX(65deg);
+    transform-origin:bottom center;
+    width:140%;
+    height:62%;
+    z-index:0;
+    pointer-events:none;
+    opacity:0.9;
+    background-repeat: repeat;
+  }
 
-    button:hover {
-      transform: scale(1.15);
-      background: #39ff14;
-      box-shadow: 0 0 25px #39ff14;
-    }
-  </style>
+  /* back grid (slower, dimmer) */
+  .grid{
+    background-image:
+      linear-gradient(transparent 0, transparent calc(100% - 1px), rgba(0,200,255,0.06) 1px),
+      linear-gradient(90deg, transparent 0, transparent calc(100% - 1px), rgba(255,50,200,0.06) 1px);
+    background-size:120px 120px;
+    mix-blend-mode:screen;
+    animation: gridMoveBack 12s linear infinite;
+    filter: blur(0.8px) contrast(1.1);
+  }
+
+  /* front grid (brighter lines, faster) */
+  .grid-2{
+    background-image:
+      linear-gradient(transparent 0, transparent calc(100% - 1px), rgba(0,255,240,0.18) 1px),
+      linear-gradient(90deg, transparent 0, transparent calc(100% - 1px), rgba(255,30,200,0.14) 1px);
+    background-size:80px 80px;
+    animation: gridMoveFront 6s linear infinite;
+  }
+
+  @keyframes gridMoveBack{
+    from{ background-position: 0 0, 0 0; }
+    to  { background-position: 0 120px, 0 120px; }
+  }
+  @keyframes gridMoveFront{
+    from{ background-position: 0 0, 0 0; }
+    to  { background-position: 0 80px, 0 80px; }
+  }
+
+  /* subtle horizon glow below sun */
+  .horizon-glow{
+    position:absolute;
+    left:50%;
+    bottom:36%;
+    transform:translateX(-50%);
+    width:120%;
+    height:18%;
+    background: radial-gradient(ellipse at center, rgba(255,80,180,0.08), transparent 40%);
+    z-index:1;
+    pointer-events:none;
+  }
+
+  /* ---------- UI PANEL & TEXT ---------- */
+  .ui {
+    position:relative;
+    z-index:2;
+    width:min(920px,94vw);
+    margin:auto;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:14px;
+    padding:28px;
+  }
+
+  /* panel behind word to improve legibility without losing retro vibe */
+  .panel {
+    width:100%;
+    max-width:860px;
+    background:var(--panel-bg);
+    border-radius:14px;
+    border:1px solid var(--panel-border);
+    padding:28px 22px;
+    box-shadow:
+      0 6px 30px rgba(0,0,0,0.6),
+      0 0 36px rgba(0,0,0,0.4),
+      inset 0 0 14px rgba(255,255,255,0.02);
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:12px;
+    backdrop-filter: blur(6px) saturate(1.1);
+  }
+
+  header h1{
+    margin:0;
+    font-family: "Press Start 2P", "Orbitron", monospace;
+    font-size: clamp(18px, 4.2vw, 28px);
+    color:var(--neon-magenta);
+    letter-spacing: 2px;
+    text-shadow:
+      0 0 10px rgba(255,43,214,0.85),
+      0 0 30px rgba(255,43,214,0.65),
+      0 0 60px rgba(255,43,214,0.25);
+    -webkit-text-stroke: 0.6px rgba(0,0,0,0.6);
+  }
+
+  /* Main word — BIG, readable, high contrast */
+  #word {
+    width:100%;
+    text-align:center;
+    font-weight:700;
+    color: #eaffff;
+    font-size: clamp(30px, 8.5vw, 96px);   /* scales with viewport */
+    line-height:1;
+    letter-spacing: 1px;
+    padding: 8px 18px;
+    -webkit-text-stroke: 1px rgba(0,0,0,0.65); /* subtle outline for contrast */
+    text-shadow:
+      0 0 8px rgba(0,240,255,0.95),
+      0 0 20px rgba(0,240,255,0.6),
+      0 6px 24px rgba(0,0,0,0.55);
+    background: linear-gradient(180deg, rgba(0,255,255,0.06), rgba(255,255,255,0.02));
+    border-radius:10px;
+  }
+
+  /* Timer — large and clear */
+  #timer{
+    font-weight:700;
+    color:var(--neon-green);
+    font-size: clamp(20px, 5.5vw, 56px);
+    line-height:1;
+    padding:6px 12px;
+    -webkit-text-stroke: 0.8px rgba(0,0,0,0.6);
+    text-shadow:
+      0 0 8px rgba(57,255,20,0.95),
+      0 0 22px rgba(57,255,20,0.55);
+    background: rgba(0,0,0,0.22);
+    border-radius:10px;
+  }
+
+  .controls{
+    display:flex;
+    gap:14px;
+    align-items:center;
+  }
+
+  .btn{
+    --padX:22px;
+    --padY:12px;
+    background: linear-gradient(180deg, #2fff6e, #00d52b);
+    border: 1px solid rgba(255,255,255,0.06);
+    color: #00130a;
+    font-weight:700;
+    padding: var(--padY) var(--padX);
+    border-radius:12px;
+    cursor:pointer;
+    font-size: clamp(12px, 2.6vw, 18px);
+    box-shadow: 0 6px 18px rgba(0,0,0,0.6), 0 0 20px rgba(57,255,20,0.12);
+    transition: transform .14s ease, box-shadow .14s ease;
+  }
+  .btn:active{ transform:translateY(2px) }
+  .btn:focus{ outline: 3px solid rgba(0,240,255,0.12); outline-offset:4px; }
+
+  /* Time up effect */
+  body.timeup #timer{
+    color:#ff5353;
+    text-shadow: 0 0 14px rgba(255,80,80,0.95), 0 0 32px rgba(255,80,80,0.6);
+    transition: all .18s;
+  }
+  /* slight grid flash when time up */
+  body.timeup .grid-2{ filter: drop-shadow(0 0 18px rgba(255,50,50,0.6)) }
+
+  /* Responsive vertical spacing for small screens */
+  @media (max-height:700px){
+    .panel{ padding:18px 14px }
+    #word{ font-size: clamp(20px, 9vw, 72px) }
+    #timer{ font-size: clamp(16px, 6vw, 48px) }
+  }
+  @media (max-width:420px){
+    h1{ font-size:14px }
+    .btn{ padding:10px 14px; font-size:13px }
+  }
+</style>
 </head>
 <body>
-  <h1>🎨 80s Pictionary 🎨</h1>
-  <div id="word">Click below to get a word!</div>
-  <div id="timer">60</div>
-  <button onclick="newWord()">New Word</button>
+  <div class="stars" aria-hidden="true"></div>
+  <div class="sun" aria-hidden="true"></div>
+  <div class="horizon-glow" aria-hidden="true"></div>
+  <div class="grid" aria-hidden="true"></div>
+  <div class="grid-2" aria-hidden="true"></div>
 
-  <script>
-    const words = [
-      "Lava lamp","Boomerang","Accordion","Bowling ball","Flip-flops",
-      "Grapes","Alarm clock","Sunglasses","Flashlight","Candle",
-      "Rollerblades","Harmonica","Map","Chessboard","Snorkel",
-      "Kite","Yo-yo","Headphones","Pancakes","Sandwich",
-      "Airplane","Laptop","Robot","Umbrella","Ghost","Castle","Mountain","Ladder","Ice cream","Banana",
-      "Rocket","Train","Drum","Glasses","Crown","Rainbow","Spaceship","Dinosaur","Roller skates","Lighthouse",
-      "Scissors","Microwave","Tent","Backpack","Bridge","Volcano","Shark","Spider","Tractor","Pirate",
-      "Mermaid","Compass","Kangaroo","Dragon","Jellyfish","Castle tower","Typewriter","Bowling alley","Disco ball","Skateboard",
-      "Washing machine","Helicopter","Diving board","Cactus","Paintbrush","Roller coaster","Ferris wheel","Telescope","Parachute","Electric guitar",
-      "Hamburger","Violin","Treasure chest","Hot air balloon","Pyramid","Windmill","Surfboard","Traffic light","Suitcase","Snowman",
-      "Submarine","Fire hydrant","Tractor beam","Knight","Genie lamp","Hourglass","Magnet","Spacesuit","Boombox","Cassette tape",
-      "Arcade machine","Neon sign","Rubik’s Cube","Jukebox","Skate rink","Polaroid camera","Payphone","VHS tape","Walkman"
-    ];
+  <main class="ui" role="main" aria-labelledby="title">
+    <div class="panel" role="region" aria-label="Pictionary controls">
+      <header id="title"><h1>🎨 80s Pictionary</h1></header>
 
-    let countdown;
-    function newWord() {
-      const randomIndex = Math.floor(Math.random() * words.length);
-      document.getElementById('word').innerText = words[randomIndex];
-      startTimer(60);
-    }
+      <div id="word" aria-live="polite">Click below to get a word</div>
+      <div id="timer" aria-live="polite">60</div>
 
-    function startTimer(seconds) {
+      <div class="controls" role="group" aria-label="Controls">
+        <button class="btn" id="newBtn" type="button">New Word</button>
+        <button class="btn" id="muteBtn" type="button" aria-pressed="false">🔈 Mute</button>
+      </div>
+    </div>
+  </main>
+
+<script>
+/* ---------- WORD LIST (100 items, updated earlier) ---------- */
+const words = [
+  "Lava lamp","Boomerang","Accordion","Bowling ball","Flip-flops",
+  "Grapes","Alarm clock","Sunglasses","Flashlight","Candle",
+  "Rollerblades","Harmonica","Map","Chessboard","Snorkel",
+  "Kite","Yo-yo","Headphones","Pancakes","Sandwich",
+  "Airplane","Laptop","Robot","Umbrella","Ghost","Castle","Mountain","Ladder","Ice cream","Banana",
+  "Rocket","Train","Drum","Glasses","Crown","Rainbow","Spaceship","Dinosaur","Roller skates","Lighthouse",
+  "Scissors","Microwave","Tent","Backpack","Bridge","Volcano","Shark","Spider","Tractor","Pirate",
+  "Mermaid","Compass","Kangaroo","Dragon","Jellyfish","Castle tower","Typewriter","Bowling alley","Disco ball","Skateboard",
+  "Washing machine","Helicopter","Diving board","Cactus","Paintbrush","Roller coaster","Ferris wheel","Telescope","Parachute","Electric guitar",
+  "Hamburger","Violin","Treasure chest","Hot air balloon","Pyramid","Windmill","Surfboard","Traffic light","Suitcase","Snowman",
+  "Submarine","Fire hydrant","Tractor beam","Knight","Genie lamp","Hourglass","Magnet","Spacesuit","Boombox","Cassette tape",
+  "Arcade machine","Neon sign","Rubik’s Cube","Jukebox","Skate rink","Polaroid camera","Payphone","VHS tape","Walkman"
+];
+
+/* ---------- AUDIO (optional retro loop) ---------- */
+/* A tiny embedded beep loop using base64 is possible but browsers often block autoplay.
+   We provide a short synth beep via WebAudio and a mute toggle. If you want a full track,
+   replace createSynth() with an <audio> element and play it on user gesture. */
+
+let audioOn = true;
+const context = window.AudioContext ? new AudioContext() : null;
+
+/* make a subtle synthwave arpeggio short loop (user gesture to start) */
+let synthOsc, synthGain, synthPlaying=false;
+function createSynth(){
+  if(!context) return;
+  synthOsc = context.createOscillator();
+  synthGain = context.createGain();
+  synthOsc.type = 'sawtooth';
+  synthOsc.frequency.value = 110; // base
+  synthGain.gain.value = 0;
+  synthOsc.connect(synthGain);
+  synthGain.connect(context.destination);
+  synthOsc.start();
+  // simple pulsing pattern using interval
+  let phase = 0;
+  setInterval(()=>{
+    if(!synthPlaying) return;
+    const now = context.currentTime;
+    // step through a tiny chord
+    const freqs = [110, 138.59, 164.81];
+    const f = freqs[phase % freqs.length];
+    synthOsc.frequency.setValueAtTime(f, now);
+    synthGain.gain.cancelScheduledValues(now);
+    synthGain.gain.setValueAtTime(0, now);
+    synthGain.gain.linearRampToValueAtTime(0.08, now + 0.02);
+    synthGain.gain.linearRampToValueAtTime(0.0, now + 0.9);
+    phase++;
+  }, 900);
+}
+
+/* ---------- TIMER & UI ---------- */
+let countdown = null;
+const wordEl = document.getElementById('word');
+const timerEl = document.getElementById('timer');
+const newBtn = document.getElementById('newBtn');
+const muteBtn = document.getElementById('muteBtn');
+
+function pickWord(){
+  const idx = Math.floor(Math.random()*words.length);
+  return words[idx];
+}
+
+function newWord(){
+  // start/unmute audio on first gesture (required by browsers)
+  if(context && context.state === 'suspended'){
+    context.resume().then(()=>{ synthPlaying=true; createSynth(); });
+  } else if(context && !synthPlaying){
+    synthPlaying=true;
+    createSynth();
+  }
+
+  // reset timeup class quickly
+  document.body.classList.remove('timeup');
+
+  const w = pickWord();
+  wordEl.textContent = w;
+  startTimer(60);
+  // small visual pulse so text is obvious
+  wordEl.animate([
+    { transform: 'scale(0.98)', opacity: 0.92 },
+    { transform: 'scale(1)', opacity: 1 }
+  ], { duration: 210, easing:'cubic-bezier(.2,.9,.3,1)' });
+}
+
+function startTimer(seconds){
+  clearInterval(countdown);
+  timerEl.textContent = seconds;
+  timerEl.style.opacity = '1';
+  let t = seconds;
+  countdown = setInterval(()=>{
+    t--;
+    if(t <= 0){
       clearInterval(countdown);
-      let timeLeft = seconds;
-      const timerDisplay = document.getElementById('timer');
-      timerDisplay.style.color = "#39ff14";
-      timerDisplay.style.textShadow = "0 0 10px #39ff14, 0 0 25px #39ff14";
-      
-      timerDisplay.textContent = timeLeft;
-      countdown = setInterval(() => {
-        timeLeft--;
-        if (timeLeft <= 0) {
-          clearInterval(countdown);
-          timerDisplay.textContent = "TIME’S UP!";
-          timerDisplay.style.color = "red";
-          timerDisplay.style.textShadow = "0 0 15px red, 0 0 40px red";
-          document.body.style.background = "radial-gradient(circle, #ff0000, #000000)";
-        } else {
-          timerDisplay.textContent = timeLeft;
-        }
-      }, 1000);
+      timerEl.textContent = "TIME'S UP!";
+      document.body.classList.add('timeup');
+      // slight shake + flash effect
+      timerEl.animate([
+        { transform: 'translateY(0)' },
+        { transform: 'translateY(-6px)' },
+        { transform: 'translateY(0)' }
+      ], { duration: 420, iterations: 1, easing:'ease-out' });
+    } else {
+      timerEl.textContent = t;
     }
-  </script>
+  }, 1000);
+}
+
+/* Mute toggle — stops creating/playing synth */
+muteBtn.addEventListener('click', ()=>{
+  audioOn = !audioOn;
+  muteBtn.textContent = audioOn ? '🔈 Mute' : '🔇 Muted';
+  if(!audioOn && context){
+    // stop any sound by suspending context
+    context.suspend();
+    synthPlaying=false;
+  } else if(audioOn && context){
+    context.resume();
+    synthPlaying=true;
+  }
+});
+
+/* keyboard shortcuts */
+document.addEventListener('keydown', (e)=>{
+  if(e.key === ' '){ e.preventDefault(); newWord(); }
+  if(e.key === 'm' || e.key === 'M'){ muteBtn.click(); }
+});
+
+/* button binding */
+newBtn.addEventListener('click', newWord);
+
+/* initialize display */
+timerEl.textContent = '60';
+wordEl.textContent = 'Click "New Word" or press SPACE';
+</script>
 </body>
 </html>
