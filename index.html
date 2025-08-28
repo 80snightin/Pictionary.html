@@ -183,6 +183,57 @@
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
       createStars();
+      /* Import retro but legible fonts */
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Orbitron:wght@500;700&display=swap');
+
+body {
+  margin: 0;
+  overflow: hidden;
+  background: black;
+  color: #fff;
+  font-family: 'Orbitron', sans-serif;
+  text-align: center;
+}
+
+h1 {
+  font-family: 'Press Start 2P', cursive;
+  font-size: 42px;
+  color: #ff00ff;
+  text-shadow: 0 0 10px #ff00ff, 0 0 20px #ff00ff, 0 0 40px #ff00ff;
+  margin-top: 40px;
+}
+
+#word {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 36px;
+  color: cyan;
+  text-shadow: 0 0 10px cyan, 0 0 20px cyan;
+  margin: 30px 0;
+}
+
+#timer {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 28px;
+  color: lime;
+  text-shadow: 0 0 10px lime, 0 0 20px lime;
+  margin-bottom: 20px;
+}
+
+button {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 20px;
+  padding: 12px 28px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  background: lime;
+  color: black;
+  box-shadow: 0 0 10px lime, 0 0 20px lime;
+  transition: transform 0.2s;
+}
+
+button:hover {
+  transform: scale(1.1);
     };
   </script>
 </body>
