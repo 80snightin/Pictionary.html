@@ -153,16 +153,39 @@
     // Pictionary Game Logic
     // --------------------
     const words = [
-      "Spacesuit", "Hamburger", "Arcade Machine", "Walkman", "Rubik's Cube",
-      "Roller Skates", "Boom Box", "Cassette Tape", "Payphone", "Trampoline"
-    ]; // Replace with your 100 words
+      "Cat","Dog","Kite","Chessboard","Car","Yo-yo","Headphones","Sandwich","Bed","Phone",
+      "Pizza","Fish","Hat","Shoe","Clock","Key","Guitar","Camera","Bicycle","Television",
+      "Airplane","Laptop","Robot","Umbrella","Ghost","Castle","Mountain","Ladder","Ice cream","Banana",
+      "Rocket","Train","Drum","Glasses","Crown","Rainbow","Spaceship","Dinosaur","Roller skates","Lighthouse",
+      "Scissors","Microwave","Tent","Backpack","Bridge","Volcano","Shark","Spider","Tractor","Pirate",
+      "Mermaid","Compass","Kangaroo","Dragon","Jellyfish","Castle tower","Typewriter","Bowling alley","Disco ball","Skateboard",
+      "Washing machine","Helicopter","Diving board","Cactus","Paintbrush","Roller coaster","Ferris wheel","Telescope","Parachute","Electric guitar",
+      "Hamburger","Violin","Treasure chest","Lighthouse","Hot air balloon","Pyramid","Windmill","Surfboard","Traffic light","Suitcase",
+      "Snowman","Harmonica","Flashlight","Sunglasses","Grapes","Genie lamp","Hourglass","Magnet","Flip flops","Boombox",
+      "Cassette tape","Arcade machine","Boomerang","Rubik’s Cube"
+    ];
 
-    let timer;
+    let availableWords = [...words]; // pool of unused words
+
+    function shuffle(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+      return array;
+    }
+
     function newWord() {
-      document.getElementById("word").textContent = words[Math.floor(Math.random() * words.length)];
+      if (availableWords.length === 0) {
+        // reset pool with new shuffled order
+        availableWords = shuffle([...words]);
+      }
+      const word = availableWords.pop();
+      document.getElementById("word").textContent = word;
       resetTimer();
     }
 
+    let timer;
     function resetTimer() {
       clearInterval(timer);
       let timeLeft = 120; // 2 minutes
