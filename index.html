@@ -165,8 +165,8 @@
       "Cassette tape","Arcade machine","Boomerang","Rubik’s Cube"
     ];
 
-    let availableWords = [...words]; // pool of unused words
-
+    let currentRound = [];
+    
     function shuffle(array) {
       for (let i = array.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
@@ -175,12 +175,15 @@
       return array;
     }
 
-    function newWord() {
-      if (availableWords.length === 0) {
-        // reset pool with new shuffled order
-        availableWords = shuffle([...words]);
+    function getNextWord() {
+      if (currentRound.length === 0) {
+        currentRound = shuffle([...words]); // new shuffled round
       }
-      const word = availableWords.pop();
+      return currentRound.pop();
+    }
+
+    function newWord() {
+      const word = getNextWord();
       document.getElementById("word").textContent = word;
       resetTimer();
     }
